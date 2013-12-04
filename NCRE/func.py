@@ -19,7 +19,7 @@ def media_exist(file_name):
         return False
 
 
-def delete_media_file(filename):
+def delete_media(filename):
     """
     删除指定的media下文件，内部调用，无url接口，安全
     """
