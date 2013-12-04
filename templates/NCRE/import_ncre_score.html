@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}
+    NCRE成绩导入
+{% endblock %}
+{% block content %}
+    <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <table>
+            {{ form.as_table }}
+            <tr>
+                <td><input type="submit" value="导入"></td>
+            </tr>
+        </table>
+    </form>
+{% endblock %}
