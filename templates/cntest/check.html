@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}成绩查询{% endblock %}
 {% block head %}
-{#    <style type="text/css">#}
-{#        body {#}
-{#            padding-top: 60px;#}
-{#        }#}
-{#    </style>#}
+    {#    <style type="text/css">#}
+    {#        body {#}
+    {#            padding-top: 60px;#}
+    {#        }#}
+    {#    </style>#}
 {% endblock %}
 {% block content %}
     <div class="navbar navbar-inverse">
@@ -16,7 +16,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="brand" href="#">成绩查询</a>
+                <a class="brand" href="#"><img src="/static/img/ncre.gif" style="height: 30px;">成绩查询</a>
 
                 <div class="nav-collapse collapse">
                     <ul class="nav pull-right">
@@ -41,8 +41,8 @@
             <div class="span12" style="line-height: 5;">&nbsp; </div>
         </div>
         <div class="row">
-            <div class="span5 well" style="background-color: #8ea6c6;">
-                <h5>NCRE成绩查询（贵州大学考点）</h5>
+            <div class="span5 well offset2" style="background-color: #8ea6c6;">
+                <h5>全国计算机等级考试（贵州省考区）成绩查询</h5>
 
                 <form action="" method="get" class="form-horizontal" id="checkForm">
 
@@ -52,6 +52,14 @@
                         <div class="controls">
                             {{ form.testId }}
                             {% ifequal error 'notfound' %}<span class="help-inline">编号不存在</span> {% endifequal %}
+                        </div>
+                    </div>
+                    <div class="control-group {% ifequal error 'id_error' %}error{% endifequal %}">
+                        <label class="control-label" for="id_stuId">身份证号后四位：</label>
+
+                        <div class="controls">
+                            {{ form.stuId }}
+                            {% ifequal error 'id_error' %}<span class="help-inline">号码错误</span>{% endifequal %}
                         </div>
                     </div>
                     <div class="control-group {% ifequal error 'captcha_error' %}error{% endifequal %}">
@@ -73,31 +81,36 @@
                     </div>
                 </form>
             </div>
-            <div class="span5 well">
-                <h5>论文成绩查询</h5>
-
-                <form action="" method="get" class="form-horizontal" id="queryArticleForm">
-
-                    <div class="control-group">
-                        <label class="control-label" for="id_stuNumber">学&nbsp;&nbsp;&nbsp;&nbsp;号：</label>
-
-                        <div class="controls">
-                            <input type="text" class="input-medium">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="id_captcha1">验证码：</label>
-
-                        <div class="controls">
-                            <input type="text" class="input-mini">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <div class="controls">
-                            <input type="submit" value="查询成绩" class="btn btn-info" id="btnQuery">
-                        </div>
-                    </div>
-                </form>
+            {#            <div class="span5 well">#}
+            {#                <h5>论文成绩查询</h5>#}
+            {##}
+            {#                <form action="" method="get" class="form-horizontal" id="queryArticleForm">#}
+            {##}
+            {#                    <div class="control-group">#}
+            {#                        <label class="control-label" for="id_stuNumber">准考证号：</label>#}
+            {##}
+            {#                        <div class="controls">#}
+            {#                            <input type="text" class="input-medium">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                    <div class="control-group">#}
+            {#                        <label class="control-label" for="id_captcha1">验证码：</label>#}
+            {##}
+            {#                        <div class="controls">#}
+            {#                            <input type="text" class="input-mini">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                    <div class="control-group">#}
+            {#                        <div class="controls">#}
+            {#                            <input type="submit" value="查询成绩" class="btn btn-info" id="btnQuery">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                </form>#}
+            {#            </div>#}
+        </div>
+        <div class="row">
+            <div class="span2 offset9">
+                <p class="text-info text-right"><small><em>有效查询计数：{{ query_count }}</em></small></p>
             </div>
         </div>
     </div>
@@ -107,7 +120,7 @@
         $(function () {
             $("#checkForm").submit(function () {
                 var l = $("#id_testId").val().length;
-                if (l != 16 && l != 18 || (l == 16) && isNaN($("#id_testId").val())) {
+                if (l != 16 && l != 18) {
                     alert("输入号码格式错误！");
                     return false;
                 }

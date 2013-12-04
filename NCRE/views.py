@@ -2,17 +2,20 @@
 # Create your views here.
 import random
 import uuid
-
+from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
+from django.template import RequestContext
 import xlrd
 from dbfpy import dbf
 
-from NCRE.func import media_exist, handle_uploaded_file
+from NCRE.func import media_exist, handle_uploaded_file, delete_media
 from cntest.settings import MEDIA_ROOT
 from NCRE.forms import CheckForm, UploadDbfForm
-from NCRE.models import TestScore
+from NCRE.models import TestScore, NCRE, QueryCount
 
 
 def check(request):
@@ -25,6 +28,7 @@ def check(request):
             cd = form.cleaned_data
             testid = cd['testId']
             captcha = cd['captcha']
+            stu_id_four = cd['stuId']
             try:
                 captcha = int(captcha)
             except ValueError:
@@ -36,7 +40,15 @@ def check(request):
                     info = TestScore.objects.filter(stuId=testid)
                 if info:
                     request.session['captcha'] = opr1 + opr2
-                    return render_to_response('cntest/result.html', {'info': info[0]})
+                    if stu_id_four != info[0].stuId[-4:]:
+                        error = 'id_error'
+                    else:
+                        if not cache.get('query_count'):
+                            count = QueryCount.objects.all()[0]
+                            cache.set('query_count', count.q_count, 3600 * 24)
+                        else:
+                            cache.incr('query_count')
+                        return render_to_response('NCRE/result.html', {'info': info[0]})
                 else:
                     error = 'notfound'
             else:
@@ -44,7 +56,8 @@ def check(request):
     else:
         form = CheckForm()
     request.session['captcha'] = opr1 + opr2
-    return render_to_response('cntest/check.html', {'opr1': opr1, 'opr2': opr2, 'error': error, 'form': form})
+    return render_to_response('NCRE/check.html', {'opr1': opr1, 'opr2': opr2, 'error': error, 'form': form,
+                                                  'query_count': cache.get('query_count')})
 
 
 def import_xls(request):
@@ -63,24 +76,61 @@ def import_xls(request):
 
 
 def import_dbf(request):
-    if request.Method == 'POST':
+    form = UploadDbfForm()
+    if request.method == 'POST':
         form = UploadDbfForm(request.POST, request.FILES)
         if form.is_valid():
             file_obj = request.FILES['dbf_file']
-            #5分钟内不能重复上传相同文件
-            if not cache.get('time_stamp'):
-                cache.set('time_stamp', uuid.uuid1(), 60 * 5)
-            file_name = uuid.uuid3(cache.get('time_stamp'), file_obj.name)
-            file_name = 'cntest/dbf/%s' % file_name
+            file_name = str(uuid.uuid1())
+            file_name = 'cntest/dbf/%s' % file_name[:8]
             if not media_exist(file_name):
-                handle_uploaded_file(request.FILES, file_name)
-            if media_exist(file_name):
-                try:
-                    db = dbf.Dbf(MEDIA_ROOT + file_name)
-                    for rec in db:
-                        stu_name = rec['XM']
-                except:
-                    return HttpResponse('无法导入')
+                handle_uploaded_file(request.FILES['dbf_file'], file_name)
             cd = form.cleaned_data
+            ncre_id = cd['ncre']
+            ncre = NCRE.objects.get(id=ncre_id)
+            if media_exist(file_name):
+                db = dbf.Dbf(MEDIA_ROOT + file_name)
+                for rec in db:
+                    stu_name = rec['XM'].decode('gb18030')
+                    test_id = rec['ZKZH']
+                    stu_id = rec['SFZH']
+                    paper_score = rec['ZZBSCJ']
+                    score = rec['ZZSJCJ']
+                    level = rec['CJ4']
+                    cert_id = rec['ZSBH']
+                    if not TestScore.objects.filter(testId=test_id):
+                        test_score = TestScore(stuId=stu_id, testId=test_id, stuName=stu_name, score=score,
+                                               paper_score=paper_score, ncre=ncre, level=level, certId=cert_id)
+                        test_score.save()
+                delete_media(file_name)
+            return HttpResponse(u'导入成功')
+    return render_to_response('NCRE/import_ncre_score.html', locals(),
+                              context_instance=RequestContext(request))
 
-        return None
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect(reverse(manage_view))
+            else:
+                # Return a 'disabled account' error message
+                errorMsg = "该用户已被禁用"
+        else:
+            # Return an 'invalid login' error message.
+            errorMsg = "用户名或密码不正确"
+    return render_to_response('login.html', locals(), context_instance=RequestContext(request))
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponse("Log out!")
+
+
+def manage_view(request):
+    return render_to_response('manage.html', locals(), context_instance=RequestContext(request))
