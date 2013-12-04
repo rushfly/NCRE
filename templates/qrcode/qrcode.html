@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <form action="" method="get" id="id_form">{% csrf_token %}
+        <label for="id_content">二维码内容：</label>
+        <textarea name="content" id="id_content"></textarea>
+        <button id="id_submit">提交</button>
+    </form>
+    <img src="" id="id_image" width="200px">
+{% endblock %}
+{% block script %}
+
+    <script type="text/javascript">
+        $(function () {
+            $("#id_submit").click(function () {
+                $("#id_image").attr("src", "{% url 'qr_code.views.my_qr' %}?content="
+                        + $("#id_content").val());
+
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

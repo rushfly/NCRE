@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}成绩查询{% endblock %}
+{% block head %}
+    {#    <style type="text/css">#}
+    {#        body {#}
+    {#            padding-top: 60px;#}
+    {#        }#}
+    {#    </style>#}
+{% endblock %}
+{% block content %}
+    <div class="navbar navbar-inverse">
+        <div class="navbar-inner">
+            <div class="container">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="brand" href="#"><img src="/static/img/ncre.gif" style="height: 30px;">成绩查询</a>
+
+                <div class="nav-collapse collapse">
+                    <ul class="nav pull-right">
+                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="http://cce.gzu.edu.cn"><i class="icon-home icon-white"></i> 学院首页</a></li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="span12">
+                <img src="/static/img/logo.gif"/>
+                {#                <img src="/static/img/tel.gif" class="pull-right"/>#}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12" style="line-height: 5;">&nbsp; </div>
+        </div>
+        <div class="row">
+            <div class="span5 well offset2" style="background-color: #8ea6c6;">
+                <h5>全国计算机等级考试（贵州省考区）成绩查询</h5>
+
+                <form action="" method="get" class="form-horizontal" id="checkForm">
+
+                    <div class="control-group {% ifequal error 'notfound' %}error{% endifequal %}">
+                        <label class="control-label" for="id_testId">准考证/身份证号：</label>
+
+                        <div class="controls">
+                            {{ form.testId }}
+                            {% ifequal error 'notfound' %}<span class="help-inline">编号不存在</span> {% endifequal %}
+                        </div>
+                    </div>
+                    <div class="control-group {% ifequal error 'id_error' %}error{% endifequal %}">
+                        <label class="control-label" for="id_stuId">身份证号后四位：</label>
+
+                        <div class="controls">
+                            {{ form.stuId }}
+                            {% ifequal error 'id_error' %}<span class="help-inline">号码错误</span>{% endifequal %}
+                        </div>
+                    </div>
+                    <div class="control-group {% ifequal error 'captcha_error' %}error{% endifequal %}">
+                        <label class="control-label" for="id_captcha">验证码：</label>
+
+                        <div class="controls">
+                            {{ form.captcha }}
+                            <span class="text-info">{{ opr1 }} + {{ opr2 }} = ?</span>
+                            {% ifequal error 'captcha_error' %}
+                                <span class="help-inline">验证码不正确</span>
+                            {% endifequal %}
+
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <input type="submit" value="查询成绩" class="btn btn-primary" id="btnQuery">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {#            <div class="span5 well">#}
+            {#                <h5>论文成绩查询</h5>#}
+            {##}
+            {#                <form action="" method="get" class="form-horizontal" id="queryArticleForm">#}
+            {##}
+            {#                    <div class="control-group">#}
+            {#                        <label class="control-label" for="id_stuNumber">准考证号：</label>#}
+            {##}
+            {#                        <div class="controls">#}
+            {#                            <input type="text" class="input-medium">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                    <div class="control-group">#}
+            {#                        <label class="control-label" for="id_captcha1">验证码：</label>#}
+            {##}
+            {#                        <div class="controls">#}
+            {#                            <input type="text" class="input-mini">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                    <div class="control-group">#}
+            {#                        <div class="controls">#}
+            {#                            <input type="submit" value="查询成绩" class="btn btn-info" id="btnQuery">#}
+            {#                        </div>#}
+            {#                    </div>#}
+            {#                </form>#}
+            {#            </div>#}
+        </div>
+        <div class="row">
+            <div class="span2 offset9">
+                <p class="text-info text-right"><small><em>有效查询计数：{{ query_count }}</em></small></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        $(function () {
+            $("#checkForm").submit(function () {
+                var l = $("#id_testId").val().length;
+                if (l != 16 && l != 18) {
+                    alert("输入号码格式错误！");
+                    return false;
+                }
+                var opr1 ={{ opr1 }}, opr2 ={{ opr2 }};
+                if ($("#id_captcha").val() != opr1 + opr2) {
+                    alert("验证码错误");
+                    return false;
+                }
+                return true;
+            });
+        });
+    </script>
+{% endblock %}
