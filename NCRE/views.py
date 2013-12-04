@@ -46,8 +46,7 @@ def check(request):
                         if not cache.get('query_count'):
                             count = QueryCount.objects.all()[0]
                             if not count:
-                                count=QueryCount(q_count=0)
-                                count.save()
+                                count = QueryCount.objects.create(q_count=1)
                             cache.set('query_count', count.q_count, 3600 * 24)
                         else:
                             cache.incr('query_count')
