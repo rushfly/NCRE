@@ -22,6 +22,12 @@ def check(request):
     opr1 = random.randint(1, 10)
     opr2 = random.randint(1, 10)
     error = ''
+    if not cache.get('query_count'):
+        count = QueryCount.objects.all()[0]
+        if not count:
+            count = QueryCount.objects.create(q_count=1)
+        cache.set('query_count', count.q_count, 3600 * 24)
+
     if request.GET:
         form = CheckForm(request.GET)
         if form.is_valid():
@@ -43,13 +49,7 @@ def check(request):
                     if stu_id_four != info[0].stuId[-4:]:
                         error = 'id_error'
                     else:
-                        if not cache.get('query_count'):
-                            count = QueryCount.objects.all()[0]
-                            if not count:
-                                count = QueryCount.objects.create(q_count=1)
-                            cache.set('query_count', count.q_count, 3600 * 24)
-                        else:
-                            cache.incr('query_count')
+                        cache.incr('query_count')
                         return render_to_response('NCRE/result.html', {'info': info[0]})
                 else:
                     error = 'notfound'
