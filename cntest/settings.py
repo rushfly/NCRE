@@ -164,6 +164,7 @@ INSTALLED_APPS = (
     'article',
     'djcelery',
     'celerytest',
+    'qr_code',
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
