@@ -23,7 +23,7 @@ def check(request):
     opr2 = random.randint(1, 10)
     error = ''
     if not cache.get('query_count'):
-        count = QueryCount.objects.all()[0]
+        count = QueryCount.objects.all()
         if not count:
             count = QueryCount.objects.create(q_count=1)
         cache.set('query_count', count.q_count, 3600 * 24)
