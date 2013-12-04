@@ -2,7 +2,7 @@
 # Create your views here.
 import random
 import uuid
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 
@@ -128,8 +128,8 @@ def login_view(request):
 
 
 def logout_view(request):
-    pass
-
+    logout(request)
+    return HttpResponse("Log out!")
 
 def manage_view(request):
     return render_to_response('manage.html', locals(), context_instance=RequestContext(request))
