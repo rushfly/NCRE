@@ -84,7 +84,7 @@ def import_dbf(request):
         if form.is_valid():
             file_obj = request.FILES['dbf_file']
             file_name = str(uuid.uuid1())
-            file_name = 'cntest/dbf/%s' % file_name[:8]
+            file_name = 'cntest/dbf/%s.dbf' % file_name[:8]
             if not media_exist(file_name):
                 handle_uploaded_file(request.FILES['dbf_file'], file_name)
             cd = form.cleaned_data
