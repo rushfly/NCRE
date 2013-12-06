@@ -93,7 +93,7 @@ def import_dbf(request):
             ncre_id = cd['ncre']
             ncre = NCRE.objects.get(id=ncre_id)
             if media_exist(file_name):
-                task.import_score(file_name, ncre)  # 异步执行导入过程
+                task.import_score.delay(file_name, ncre)  # 异步执行导入过程
             return HttpResponse(u'导入成功')
     return render_to_response('NCRE/import_ncre_score.html', locals(),
                               context_instance=RequestContext(request))
