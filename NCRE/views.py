@@ -2,7 +2,9 @@
 # Create your views here.
 import random
 import uuid
-from django.contrib.auth import authenticate, login
+
+from django.contrib.auth import authenticate, login, logout
+
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 
@@ -11,8 +13,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 import xlrd
 from dbfpy import dbf
-
 from NCRE.func import media_exist, handle_uploaded_file, delete_media
+from NCRE import task
 from cntest.settings import MEDIA_ROOT
 from NCRE.forms import CheckForm, UploadDbfForm
 from NCRE.models import TestScore, NCRE, QueryCount
@@ -22,6 +24,13 @@ def check(request):
     opr1 = random.randint(1, 10)
     opr2 = random.randint(1, 10)
     error = ''
+    if not cache.get('query_count'):
+        count = QueryCount.objects.all()
+        if not count:
+            count = QueryCount.objects.create(q_count=0)
+        else:
+            count = count[0]
+        cache.set('query_count', count.q_count, 3600 * 24)
     if request.GET:
         form = CheckForm(request.GET)
         if form.is_valid():
@@ -43,11 +52,7 @@ def check(request):
                     if stu_id_four != info[0].stuId[-4:]:
                         error = 'id_error'
                     else:
-                        if not cache.get('query_count'):
-                            count = QueryCount.objects.all()[0]
-                            cache.set('query_count', count.q_count, 3600 * 24)
-                        else:
-                            cache.incr('query_count')
+                        cache.incr('query_count')
                         return render_to_response('NCRE/result.html', {'info': info[0]})
                 else:
                     error = 'notfound'
@@ -82,27 +87,15 @@ def import_dbf(request):
         if form.is_valid():
             file_obj = request.FILES['dbf_file']
             file_name = str(uuid.uuid1())
-            file_name = 'cntest/dbf/%s' % file_name[:8]
+
+            file_name = 'cntest/dbf/%s.dbf' % file_name[:8]
             if not media_exist(file_name):
                 handle_uploaded_file(request.FILES['dbf_file'], file_name)
             cd = form.cleaned_data
             ncre_id = cd['ncre']
             ncre = NCRE.objects.get(id=ncre_id)
             if media_exist(file_name):
-                db = dbf.Dbf(MEDIA_ROOT + file_name)
-                for rec in db:
-                    stu_name = rec['XM'].decode('gb18030')
-                    test_id = rec['ZKZH']
-                    stu_id = rec['SFZH']
-                    paper_score = rec['ZZBSCJ']
-                    score = rec['ZZSJCJ']
-                    level = rec['CJ4']
-                    cert_id = rec['ZSBH']
-                    if not TestScore.objects.filter(testId=test_id):
-                        test_score = TestScore(stuId=stu_id, testId=test_id, stuName=stu_name, score=score,
-                                               paper_score=paper_score, ncre=ncre, level=level, certId=cert_id)
-                        test_score.save()
-                delete_media(file_name)
+                task.import_score.delay(file_name, ncre)  # 异步执行导入过程
             return HttpResponse(u'导入成功')
     return render_to_response('NCRE/import_ncre_score.html', locals(),
                               context_instance=RequestContext(request))
@@ -128,7 +121,8 @@ def login_view(request):
 
 
 def logout_view(request):
-    pass
+    logout(request)
+    return HttpResponse("Log out!")
 
 
 def manage_view(request):

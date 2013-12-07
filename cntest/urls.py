@@ -18,6 +18,7 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^pclevel/', include('NCRE.urls')),
     url(r'^$', 'NCRE.views.check'),
+    url(r'^test/$','celerytest.views.test'),
     url(r'^login/$', 'NCRE.views.login_view'),
     url(r'^logou/$', 'NCRE.views.logout_view'),
     url(r'^manage/$', 'NCRE.views.manage_view'),

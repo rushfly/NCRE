@@ -1,2 +1,5 @@
-#compiled py files:
+#compiled py
 *.pyc
+*.dbf
+*.xls
+*.db

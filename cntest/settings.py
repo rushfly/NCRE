@@ -1,6 +1,10 @@
 # Django settings for cntest project.
 
 DEBUG = False
+import djcelery
+
+djcelery.setup_loader()
+
 TEMPLATE_DEBUG = DEBUG
 LOCAL_TEST = False
 ADMINS = (
@@ -9,6 +13,9 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
@@ -156,6 +163,8 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'NCRE',
     'article',
+    'djcelery',
+    'celerytest',
     'qr_code',
 )
 

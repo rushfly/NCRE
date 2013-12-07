@@ -48,3 +48,4 @@ class Score(models.Model):
         verbose_name_plural = u'成绩'
         verbose_name = u'成绩'
         unique_together = ('student', 'lesson')
+
