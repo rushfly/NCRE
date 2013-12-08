@@ -2,19 +2,18 @@
 # Create your views here.
 import random
 import uuid
-
 from django.contrib.auth import authenticate, login, logout
-
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
-
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 import xlrd
+
 from dbfpy import dbf
 from NCRE.func import media_exist, handle_uploaded_file, delete_media
 from NCRE import task
+
 from cntest.settings import MEDIA_ROOT
 from NCRE.forms import CheckForm, UploadDbfForm
 from NCRE.models import TestScore, NCRE, QueryCount
@@ -31,6 +30,7 @@ def check(request):
         else:
             count = count[0]
         cache.set('query_count', count.q_count, 3600 * 24)
+
     if request.GET:
         form = CheckForm(request.GET)
         if form.is_valid():

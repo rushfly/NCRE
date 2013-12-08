@@ -1,8 +1,6 @@
 # Django settings for cntest project.
-
 DEBUG = False
 import djcelery
-
 djcelery.setup_loader()
 
 TEMPLATE_DEBUG = DEBUG

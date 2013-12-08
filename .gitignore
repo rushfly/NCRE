@@ -1,5 +1,8 @@
 #compiled py
 *.pyc
+<<<<<<< HEAD
 *.dbf
 *.xls
 *.db
+=======
+>>>>>>> 3ed5c2105d6730f2188bfa251082af05c8678780
